@@ -1,0 +1,159 @@
+Step 1---------
+run below command in terminal
+npm i react-native-config --save
+
+Step 2---------
+creare .env, .env.dev and .env.live file in root directory
+
+## iOS
+
+Step 3---------
+open iOS project in xCode.
+select Project then right click on project name under TARGETS
+choose duplicate then select "Duplicate Only" option in popup.
+rename the duplicate target name "ProjectName Dev"/"ProjectName Live"
+choose manage schema and check schema name. change if needed
+choose edit schema and choose dev/live scheme on top then open "Build from left pannel then select "Pre-actions", add "New Run Script action" using + sign below.
+copy bewlow script accoding to schema selection and pase in script section
+
+---
+
+//use for dev environment
+cp "${PROJECT_DIR}/../.env.dev" "${PROJECT_DIR}/../.env"
+
+---
+
+or
+
+//use for live environment
+cp "${PROJECT_DIR}/../.env.live" "${PROJECT_DIR}/../.env"
+
+---
+
+Step 4---------
+we have two new info pList in root ios peoject.rename according to environment like "ProjectName Dev-info" or "ProjectName Live-info".
+
+Step 5---------
+Search "Packaging" in "Build Settings"
+change info.plist file name according to environment selection
+
+Step 6---------
+open pod file
+rename target 'ProjectName' to abstract_target 'ProjectNameCommonPods'
+
+then copy below target and paste above target 'ProjectNameTests' do
+
+target 'NavigationTSProject Dev' do
+end
+
+target 'NavigationTSProject Live' do
+end
+
+---
+
+Step 7---------
+Add below line in script section in package.json
+
+---
+
+"dev-ios": "react-native run-ios --scheme 'NavigationTSProject Dev' --configuration Dev",
+"live-ios": "react-native run-ios --scheme 'NavigationTSProject Live' --configuration Dev"
+
+---
+
+## Android
+
+Step 3---------
+goto android->app and open build.gradle file
+add belew after "apply plugin: "com.android.application""
+
+---
+
+project.ext.envConfigFiles = [
+debug: "env.dev",
+release: "env.dev",
+devdebug: "env.dev",
+devrelease: "env.dev",
+livedebug: "env.live",
+liverelease: "env.live"
+]
+
+apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
+
+---
+
+Step 4---------
+add below after compileSdkVersion rootProject.ext.compileSdkVersion
+
+---
+
+flavorDimensions "default"
+productFlavors{
+dev {
+applicationId "com.navigationtsproject.dev"
+minSdkVersion rootProject.ext.minSdkVersion
+targetSdkVersion rootProject.ext.targetSdkVersion
+resValue "string", "build_config_package", "com.navigationtsproject"
+versionCode 1
+versionName "1.0"
+}
+live {
+applicationId "com.navigationtsproject.live"
+minSdkVersion rootProject.ext.minSdkVersion
+targetSdkVersion rootProject.ext.targetSdkVersion
+resValue "string", "build_config_package", "com.navigationtsproject"
+versionCode 1
+versionName "1.0"
+}
+}
+
+---
+
+Step 5---------
+add below lines under script in package.json file
+
+---
+
+    "dev-android": "react-native run-android --variant=devDebug --appIdSuffix dev",
+    "dev-android-release-variant": "react-native run-android --variant=devRelease --appIdSuffix dev",
+    "dev-android-release": "cd android && ./gradlew clean && ./gradlew assembleDevRelease",
+    "live-android": "react-native run-android --variant=liveDebug --appIdSuffix live",
+    "live-android-release-variant": "react-native run-android --variant=liveRelease --appIdSuffix live",
+    "live-android-release": "cd android && ./gradlew clean && ./gradlew assembleLiveRelease",
+
+    ---
+
+Step 6---------
+use this step if you want to use different name, appIcon or splash etc
+goto android->app->src then
+copy main folder and paste and rename to "dev"
+again copy and paste and rename to "live"
+delete java folder form both (dev and live)
+then goto android->app->src->live->res->value->string
+then change app name like
+<string name="app_name">type app name</string>
+
+same for dev
+then goto android->app->src->dev->res->value->string
+then change app name like
+<string name="app_name">type app name</string>
+
+also you can replace different app icons for both
+
+## Boom you have setup app with 2 environment "Dev" and "live"
+
+use below cammand in terminal to play your app
+
+1. npm run live-ios
+2. npm run dev-ios
+3. npm run live-android
+4. npm run dev-android
+5. npm run live-android-release-variant
+6. npm run dev-android-release-variant
+7. npx react-native run-ios --scheme "ProjectName Dev" --configuration Dev
+
+Note: replace "ProjectName" with your project name
+
+Ref Video link
+https://www.youtube.com/watch?v=8lA0wP-0vEo
+https://www.youtube.com/watch?v=WbkYVnH4uME
